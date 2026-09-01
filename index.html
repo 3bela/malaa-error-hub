@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Malaa Error Hub — 3-Role Governance & Diagnostics Platform (Product POV, Customer Support POV & Engineering POV)">
+  <title>Malaa Error Hub</title>
+  
+  <!-- Fonts: Cairo (Arabic) & Inter (English) with graceful local fallbacks -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Global Toast Notification Container -->
+  <div id="statusToast" class="status-toast" style="display: none;" role="status" aria-live="polite"></div>
+
+  <!-- Fallback Error Diagnostic Container (Visible only if script execution errors occur) -->
+  <div id="error-fallback" style="display: none;"></div>
+
+  <!-- Application Mount Root -->
+  <div id="root">
+    <!-- Initial Loading State -->
+    <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: sans-serif; color: #475569;">
+      <div style="text-align: center;">
+        <div style="width: 40px; height: 40px; border: 3px solid #cbd5e1; border-top-color: #2563eb; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+        <p style="font-weight: 600;">Loading Malaa Error Hub...</p>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+
+  <!-- Pure Self-Contained Vanilla Application Scripts (Strict Loading Order, Zero CDN/Build Dependencies) -->
+  <script src="src/mockData.js"></script>
+  <script src="src/storage.js"></script>
+  <script src="src/export.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>
