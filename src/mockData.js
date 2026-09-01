@@ -13,31 +13,31 @@ var STATUS_CONFIG = {
     key: "change_request_cs",
     label: "Change Request CS",
     badgeClass: "change_request_cs",
-    description: "Customer Support submitted a new change or improvement request for this error."
+    description: "Customer Support submitted a new request related to an error."
   },
   not_reviewed: {
     key: "not_reviewed",
     label: "Not Reviewed",
     badgeClass: "not_reviewed",
-    description: "Extracted from the application code; Product has not reviewed or verified it yet."
+    description: "An error was extracted from the code but Product has not reviewed it."
   },
   in_review: {
     key: "in_review",
     label: "In Review",
     badgeClass: "in_review",
-    description: "Product is currently reviewing, updating bilingual copy, or refining diagnostics."
+    description: "Product is currently reviewing or correcting the error."
   },
   ready_for_engineering: {
     key: "ready_for_engineering",
     label: "Ready for Engineering",
     badgeClass: "ready_for_engineering",
-    description: "Product approved all bilingual copy and diagnostics; ready for Engineering implementation."
+    description: "Product approved the corrections and the error is ready for Engineering."
   },
   implemented: {
     key: "implemented",
     label: "Implemented",
     badgeClass: "implemented",
-    description: "Engineering confirmed the correction is deployed in source code."
+    description: "Engineering confirmed that the correction was applied in the code."
   }
 };
 

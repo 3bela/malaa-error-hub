@@ -4,7 +4,7 @@ Write-Host "=================================================================" -
 Write-Host " Running Automated Verification: Malaa Error Hub MVP Corrections " -ForegroundColor Cyan
 Write-Host "=================================================================" -ForegroundColor Cyan
 
-$baseDir = "C:\Users\Product Intern\.gemini\antigravity\scratch\error-dashboard"
+$baseDir = "C:\Users\Product Intern\.gemini\antigravity\scratch\malaa-error-hub"
 $passCount = 0
 $failCount = 0
 
