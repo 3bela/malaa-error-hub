@@ -15,11 +15,11 @@ $appJs = Get-Content (Join-Path $PSScriptRoot "src\app.js") -Raw -Encoding UTF8
 $styleCss = Get-Content (Join-Path $PSScriptRoot "style.css") -Raw -Encoding UTF8
 $indexHtml = Get-Content (Join-Path $PSScriptRoot "index.html") -Raw -Encoding UTF8
 
-# TEST 1: Seed Data Distribution & 8 Services & 5 Final Statuses
+# TEST 1: Seed Data Distribution & 8 Services
 Write-Host "`n=== TEST 1: Seed Data Distribution and 8 Services ===" -ForegroundColor Yellow
 $idMatches = [regex]::Matches($mockJs, 'errorCode:\s*"([^"]+)"')
 $serviceMatches = [regex]::Matches($mockJs, 'service:\s*"([^"]+)"')
-$statusMatches = [regex]::Matches($mockJs, 'status:\s*"([^"]+)"')
+$statusMatches = [regex]::Matches($mockJs, 'reviewStatus:\s*"([^"]+)"')
 
 $recordCount = $idMatches.Count
 Write-Host "Total Seed Records: $recordCount"
@@ -60,23 +60,23 @@ if ($allServicesOk) {
 }
 
 # Status Counts
-$statusCounts = @{ "change_request_cs"=0; "not_reviewed"=0; "in_review"=0; "ready_for_engineering"=0; "implemented"=0 }
+$statusCounts = @{ "not_reviewed"=0; "in_review"=0; "needs_clarification"=0; "approved"=0 }
 foreach ($match in $statusMatches) {
     $val = $match.Groups[1].Value
     if ($statusCounts.ContainsKey($val)) {
         $statusCounts[$val]++
     }
 }
-Write-Host ("Status Distribution: CS_Req=" + $statusCounts["change_request_cs"] + ", NotReviewed=" + $statusCounts["not_reviewed"] + ", InReview=" + $statusCounts["in_review"] + ", ReadyForEng=" + $statusCounts["ready_for_engineering"] + ", Implemented=" + $statusCounts["implemented"])
-if ($statusCounts["change_request_cs"] -gt 0 -and $statusCounts["not_reviewed"] -gt 0 -and $statusCounts["in_review"] -gt 0 -and $statusCounts["ready_for_engineering"] -gt 0 -and $statusCounts["implemented"] -gt 0) {
-    Write-Host "PASS: All 5 final error statuses present in seed data." -ForegroundColor Green
+Write-Host ("Status Distribution: Approved=" + $statusCounts["approved"] + ", InReview=" + $statusCounts["in_review"] + ", Clarification=" + $statusCounts["needs_clarification"] + ", NotReviewed=" + $statusCounts["not_reviewed"])
+if ($statusCounts["approved"] -gt 0 -and $statusCounts["in_review"] -gt 0 -and $statusCounts["needs_clarification"] -gt 0 -and $statusCounts["not_reviewed"] -gt 0) {
+    Write-Host "PASS: All 4 review statuses present in seed data." -ForegroundColor Green
 } else {
-    Write-Host "FAIL: One or more final statuses missing." -ForegroundColor Red
+    Write-Host "FAIL: One or more review statuses missing." -ForegroundColor Red
     $allPassed = $false
 }
 
-# TEST 2: CSV Export Schema & Exact 7 Core Columns Order
-Write-Host "`n=== TEST 2: CSV Export Schema and Exact 7 Core Columns Order ===" -ForegroundColor Yellow
+# TEST 2: CSV Export Schema & Exact 14 Column Order
+Write-Host "`n=== TEST 2: CSV Export Schema and Exact 14 Column Order ===" -ForegroundColor Yellow
 $expectedHeaders = @(
     "Error Code",
     "Service",
@@ -84,7 +84,14 @@ $expectedHeaders = @(
     "Original AR Message",
     "Corrected AR Message",
     "Original EN Message",
-    "Corrected EN Message"
+    "Corrected EN Message",
+    "AI-Suggested Trigger",
+    "Approved Trigger",
+    "Meaning",
+    "Customer Support Action",
+    "Review Status",
+    "Changed Fields",
+    "Last Edited"
 )
 
 $extractedHeaders = @()
@@ -111,13 +118,13 @@ if ($extractedHeaders.Count -eq $expectedHeaders.Count) {
         }
     }
 } else {
-    Write-Host "FAIL: Header count mismatch: Expected 7, Got $($extractedHeaders.Count)" -ForegroundColor Red
+    Write-Host "FAIL: Header count mismatch: Expected 14, Got $($extractedHeaders.Count)" -ForegroundColor Red
     $headersMatch = $false
     $allPassed = $false
 }
 
 if ($headersMatch) {
-    Write-Host "PASS: Exact 7 core CSV export columns verified in correct order (triggers, meaning, action, comment, status, changed fields excluded):" -ForegroundColor Green
+    Write-Host "PASS: Exact 14 CSV export columns verified in correct order:" -ForegroundColor Green
     for ($i = 0; $i -lt $expectedHeaders.Count; $i++) {
         Write-Host "  $($i+1). $($expectedHeaders[$i])" -ForegroundColor Gray
     }
@@ -136,24 +143,22 @@ if ($hasRtl -and $hasCairo -and $hasMono) {
     $allPassed = $false
 }
 
-# TEST 4: App.js 3-Section Separation (Product, Customer Care, Engineer) & Tracking Ready Engineering
-Write-Host "`n=== TEST 4: 3-Section Separation & Governance in app.js ===" -ForegroundColor Yellow
-$hasProductPOV = $appJs.Contains("Product")
-$hasSupportPOV = $appJs.Contains("Customer Care")
-$hasEngPOV = $appJs.Contains("Engineer")
-$hasTrackingReady = $appJs.Contains("Tracking Ready Engineering")
-$hasValidationAlert = ($appJs.Contains("validation-alert-box") -or $appJs.Contains("Ready for Engineering Blocked"))
+# TEST 4: App.js POV Role Separation & Approval Gates
+Write-Host "`n=== TEST 4: POV Role Separation and Approval Validation in app.js ===" -ForegroundColor Yellow
+$hasProductPOV = $appJs.Contains("Product POV")
+$hasSupportPOV = $appJs.Contains("Customer Support POV")
+$hasValidationAlert = ($appJs.Contains("validation-alert-box") -or $appJs.Contains("Approval Blocked"))
 $hasCsvDownload = $exportJs.Contains("downloadCsv")
 
-if ($hasProductPOV -and $hasSupportPOV -and $hasEngPOV -and $hasTrackingReady) {
-    Write-Host "PASS: 3 renamed sections (Product, Customer Care, Engineer) and Product 'Tracking Ready Engineering' section verified." -ForegroundColor Green
+if ($hasProductPOV -and $hasSupportPOV) {
+    Write-Host "PASS: Role-based separation between Product POV and Customer Support POV verified." -ForegroundColor Green
 } else {
-    Write-Host "FAIL: Perspective sections or Tracking Ready section missing in controller." -ForegroundColor Red
+    Write-Host "FAIL: POV roles missing in controller." -ForegroundColor Red
     $allPassed = $false
 }
 
 if ($hasValidationAlert) {
-    Write-Host "PASS: Strict Ready for Engineering validation rules implemented (AR, EN, Trigger, Meaning, Support Action required)." -ForegroundColor Green
+    Write-Host "PASS: Strict Approval validation rules implemented (AR, EN, Trigger, Meaning, Support Action required)." -ForegroundColor Green
 } else {
     Write-Host "FAIL: Approval validation missing." -ForegroundColor Red
     $allPassed = $false
@@ -167,4 +172,3 @@ if ($allPassed) {
     Write-Host "   *** SOME TESTS FAILED ***                     " -ForegroundColor Red
 }
 Write-Host "=================================================`n" -ForegroundColor Cyan
-

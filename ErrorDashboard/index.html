@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Internal Customer Care Error Dashboard for searching, browsing by service section, and managing error codes and resolution actions.">
+  <title>Error Dashboard — Customer Care</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header with Top-Level Navigation Tabs -->
+    <header class="app-header">
+      <div class="header-nav-row">
+        <div class="brand">
+          <div class="brand-badge">Internal Tool</div>
+          <h1 class="brand-title" id="brandLogo" role="button" tabindex="0" title="Return to home">Error Dashboard</h1>
+          <p class="brand-subtitle">Customer Care Error Code Lookup & Action Guide</p>
+        </div>
+
+        <!-- Primary Navigation Tabs -->
+        <nav class="app-nav" aria-label="Main Navigation">
+          <button type="button" id="navHomeBtn" class="nav-tab active" aria-current="page">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            Home
+          </button>
+          <button type="button" id="navAllErrorsBtn" class="nav-tab">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="8" y1="6" x2="21" y2="6"></line>
+              <line x1="8" y1="12" x2="21" y2="12"></line>
+              <line x1="8" y1="18" x2="21" y2="18"></line>
+              <line x1="3" y1="6" x2="3.01" y2="6"></line>
+              <line x1="3" y1="12" x2="3.01" y2="12"></line>
+              <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
+            All Errors
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Status / Toast Notification -->
+      <div id="statusToast" class="status-toast" role="status" aria-live="polite"></div>
+
+      <!-- PAGE 1: Home Page (Search & Dashboard) -->
+      <div id="homePageContainer" class="page-container">
+        <!-- Search Section -->
+        <section class="search-section" aria-label="Error Search">
+          <form id="searchForm" class="search-form" novalidate autocomplete="off">
+            <label for="errorSearchInput" class="search-label">Search by Error Code, Number, or Keyword</label>
+            <div class="search-input-wrapper">
+              <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input 
+                type="text" 
+                id="errorSearchInput" 
+                name="errorCode"
+                class="search-input" 
+                placeholder="e.g. AUTH_018, BANK_011, CST_011, or 018..." 
+                autocomplete="off"
+                spellcheck="false"
+                required
+              >
+              <button type="button" id="clearSearchBtn" class="clear-btn" aria-label="Clear search" style="display: none;">
+                &times;
+              </button>
+              <button type="submit" id="searchSubmitBtn" class="btn btn-primary search-btn">
+                Search
+              </button>
+
+              <!-- Search Suggestions Dropdown -->
+              <ul id="searchSuggestions" class="suggestions-dropdown" role="listbox" style="display: none;"></ul>
+            </div>
+          </form>
+        </section>
+
+        <!-- Home State View -->
+        <div id="homeState" class="home-state-container">
+          <!-- Search Guidance Card -->
+          <div class="guidance-card">
+            <div class="guidance-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            </div>
+            <div class="guidance-content">
+              <h2 class="guidance-title">Find an app error</h2>
+              <p class="guidance-text">Search using the full error code, number, or keywords across service sections.</p>
+              <div class="guidance-example">
+                <span class="example-label">Example:</span>
+                <code>AUTH_018</code> <span class="example-divider">or</span> <code>BANK_011</code> <span class="example-divider">or</span> <code>CST_011</code>
+              </div>
+            </div>
+            <button type="button" id="browseAllErrorsBtn" class="btn btn-outline btn-sm browse-btn">
+              Browse All Errors &rarr;
+            </button>
+          </div>
+
+          <!-- Home Sections Grid: Recently Viewed & Saved Errors (Compact Code-Only Chips) -->
+          <div class="home-sections-grid">
+            <!-- Recently Viewed Section -->
+            <div class="home-panel">
+              <div class="panel-header">
+                <h3 class="panel-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                  Recently Viewed
+                </h3>
+              </div>
+              <div id="recentErrorsContainer" class="panel-list-container">
+                <p id="noRecentMsg" class="empty-state-text">Your recently viewed errors will appear here.</p>
+                <div id="recentList" class="panel-chips-list" style="display: none;"></div>
+              </div>
+            </div>
+
+            <!-- Saved Errors Section -->
+            <div class="home-panel">
+              <div class="panel-header">
+                <h3 class="panel-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                  Saved Errors
+                </h3>
+                <span class="panel-badge">Local Saved</span>
+              </div>
+              <div id="savedErrorsContainer" class="panel-list-container">
+                <p id="noSavedMsg" class="empty-state-text">You have no saved errors yet.</p>
+                <div id="savedList" class="panel-chips-list" style="display: none;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Access Section (Error-Code Chips Only) -->
+          <div class="quick-access-section">
+            <div class="quick-access-header">
+              <h3 class="quick-access-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+                Quick Access
+              </h3>
+              <span class="quick-access-note">Sample error codes</span>
+            </div>
+            <div class="quick-access-chips">
+              <button type="button" class="quick-chip-btn" data-code="AUTH_018">AUTH_018</button>
+              <button type="button" class="quick-chip-btn" data-code="BANK_011">BANK_011</button>
+              <button type="button" class="quick-chip-btn" data-code="CST_011">CST_011</button>
+              <button type="button" class="quick-chip-btn" data-code="INV_026">INV_026</button>
+              <button type="button" class="quick-chip-btn" data-code="PAY_000">PAY_000</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE 2: All Errors Catalog Page -->
+      <div id="allErrorsPageContainer" class="page-container" style="display: none;">
+        <section class="all-errors-section" aria-label="All Errors Catalog">
+          <!-- All Errors Header -->
+          <div class="catalog-header">
+            <div>
+              <h2 class="catalog-title">All Errors Catalog</h2>
+              <p class="catalog-subtitle">Browse errors by service section or search across codes, numbers, meanings, triggers, user messages, and actions.</p>
+            </div>
+            <div class="catalog-stats">
+              <span id="catalogCountBadge" class="catalog-count-badge">0 Total Errors</span>
+            </div>
+          </div>
+
+          <!-- 8 Service Sections Navigation Filter Bar -->
+          <div class="categories-container" aria-label="Service Sections">
+            <span class="categories-label">Service Sections:</span>
+            <div id="sectionPillsContainer" class="category-pills-list">
+              <!-- Dynamically populated section pills with live counts -->
+            </div>
+          </div>
+
+          <!-- Table Search & Filter Bar -->
+          <div class="table-search-bar">
+            <div class="table-search-wrapper">
+              <svg class="table-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input 
+                type="text" 
+                id="tableSearchInput" 
+                class="table-search-input" 
+                placeholder="Search by code, number, meaning, trigger, user messages, or care action..." 
+                autocomplete="off"
+                spellcheck="false"
+              >
+              <button type="button" id="clearTableSearchBtn" class="clear-btn table-clear-btn" aria-label="Clear filter" style="display: none;">
+                &times;
+              </button>
+            </div>
+            <div id="tableActiveFilterSummary" class="table-filter-summary">
+              Showing <span id="filteredCountText">0</span> errors
+            </div>
+          </div>
+
+          <!-- All Errors Table Container -->
+          <div class="table-card">
+            <div class="table-responsive">
+              <table class="errors-table">
+                <thead>
+                  <tr>
+                    <th scope="col" class="col-code">Error Code</th>
+                    <th scope="col" class="col-meaning">Meaning</th>
+                    <th scope="col" class="col-trigger">Trigger</th>
+                    <th scope="col" class="col-action">Customer Care Action</th>
+                    <th scope="col" class="col-save">Save</th>
+                  </tr>
+                </thead>
+                <tbody id="errorsTableBody">
+                  <!-- Dynamically rendered table rows -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Table Empty Filter State -->
+            <div id="tableEmptyState" class="table-empty-state" style="display: none;">
+              <div class="empty-table-icon">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+              </div>
+              <h3 class="empty-table-title">No errors found in this section</h3>
+              <p class="empty-table-desc">Try clearing your search query or selecting a different service section.</p>
+              <button type="button" id="resetTableFiltersBtn" class="btn btn-secondary btn-sm">Reset Filters</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Multiple Matches State (Shared) -->
+      <div id="multipleMatchesState" class="multiple-matches-container" style="display: none;">
+        <div class="matches-header">
+          <div>
+            <h2 class="matches-title">Multiple Matches Found</h2>
+            <p class="matches-subtitle">Select an error below to view its details and action guide.</p>
+          </div>
+          <button type="button" id="backFromMatchesBtn" class="btn btn-outline btn-sm">Back</button>
+        </div>
+        <div id="matchesList" class="matches-grid"></div>
+      </div>
+
+      <!-- Not Found State (Shared) -->
+      <div id="notFoundState" class="state-card not-found-state" style="display: none;">
+        <div class="state-icon alert-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <h2 class="state-title">Error not found</h2>
+        <p class="state-description">No error matches this code or number. Check the code and try again.</p>
+        <button type="button" id="backToHomeFromNotFoundBtn" class="btn btn-secondary state-action-btn">Back to Home</button>
+      </div>
+
+      <!-- Error Details Card (Shared) -->
+      <div id="errorDetailsCard" class="error-card" style="display: none;">
+        <!-- Card Header (Error Code, Section Badge & Save Error Button) -->
+        <div class="card-header">
+          <div class="header-main">
+            <div class="badge-tag-row">
+              <span class="field-caption">Error Code (Read-Only)</span>
+              <span id="detailSectionBadge" class="detail-category-badge">Section</span>
+            </div>
+            <div class="code-badge" id="detailErrorCode">AUTH_000</div>
+          </div>
+          <div class="header-actions">
+            <!-- Contextual Return Button (Standardized: ← Back to Errors or ← Back to Home) -->
+            <button type="button" id="detailBackBtn" class="btn btn-secondary btn-sm back-nav-btn" title="Return to previous view">
+              <span id="detailBackBtnText">&larr; Back to Errors</span>
+            </button>
+
+            <!-- Save Error / Saved Toggle Button -->
+            <button type="button" id="toggleSaveErrorBtn" class="btn save-error-btn unsaved">
+              <span class="save-icon-symbol">&star;</span>
+              <span id="saveErrorBtnText">Save Error</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <!-- SECTION 1: User-Facing Information (Read-only) -->
+          <section class="details-section user-facing-section" aria-label="User Facing Information">
+            <div class="section-title-bar">
+              <div class="section-title-wrapper">
+                <h3 class="section-title">User-Facing Information</h3>
+                <p class="section-desc">Messages shown directly to the user in the application interface.</p>
+              </div>
+              <span class="field-tag tag-readonly">Read-only</span>
+            </div>
+
+            <div class="field-row-split">
+              <!-- Arabic Error Message -->
+              <div class="field-group">
+                <div class="field-header">
+                  <span class="field-label">Arabic Error Message</span>
+                </div>
+                <div id="viewArabicMsg" class="field-value-text arabic-message-box" dir="rtl" lang="ar"></div>
+              </div>
+
+              <!-- English Error Message -->
+              <div class="field-group">
+                <div class="field-header">
+                  <span class="field-label">English Error Message</span>
+                </div>
+                <div id="viewEnglishMsg" class="field-value-text english-message-box"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- SECTION 2: Customer Care Information (Editable - Contains Edit Controls) -->
+          <section class="details-section care-facing-section" aria-label="Customer Care Information">
+            <div class="section-title-bar">
+              <div class="section-title-wrapper">
+                <h3 class="section-title">Customer Care Information</h3>
+                <p class="section-desc">Internal operational context, diagnostic meaning, and recommended care instructions.</p>
+              </div>
+              
+              <!-- Edit Controls placed directly inside Customer Care Information -->
+              <div class="care-section-actions">
+                <!-- View Mode Button -->
+                <button type="button" id="careEditBtn" class="btn btn-outline btn-sm">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                  Edit Information
+                </button>
+
+                <!-- Edit Mode Buttons -->
+                <div id="careEditControls" class="edit-controls" style="display: none;">
+                  <button type="button" id="careCancelBtn" class="btn btn-secondary btn-sm">
+                    Cancel
+                  </button>
+                  <button type="button" id="careSaveBtn" class="btn btn-primary btn-sm">
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Edit Mode Banner Notice inside Customer Care section -->
+            <div id="careEditNotice" class="edit-mode-notice" style="display: none;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              Editing mode active: Changes to <strong>Meaning</strong>, <strong>Trigger</strong>, and <strong>Customer Care Action</strong> will be saved locally in this browser.
+            </div>
+
+            <div class="care-fields-stack">
+              <!-- Meaning Field (Editable) -->
+              <div class="field-group editable-field-group">
+                <div class="field-header">
+                  <label for="editMeaningInput" class="field-label">Meaning</label>
+                  <span class="field-tag tag-field-status">Editable</span>
+                </div>
+                <div id="viewMeaning" class="field-value-text"></div>
+                <div id="editMeaningContainer" class="field-input-wrapper" style="display: none;">
+                  <textarea id="editMeaningInput" class="form-textarea" rows="2" placeholder="Explain what the error means..."></textarea>
+                </div>
+              </div>
+
+              <!-- Trigger Field (Editable) -->
+              <div class="field-group editable-field-group">
+                <div class="field-header">
+                  <label for="editTriggerInput" class="field-label">Trigger</label>
+                  <span class="field-tag tag-field-status">Editable</span>
+                </div>
+                <div id="viewTrigger" class="field-value-text"></div>
+                <div id="editTriggerContainer" class="field-input-wrapper" style="display: none;">
+                  <textarea id="editTriggerInput" class="form-textarea" rows="3" placeholder="Describe the trigger condition..."></textarea>
+                </div>
+              </div>
+
+              <!-- Customer Care Action Field (Editable) -->
+              <div class="field-group editable-field-group action-highlight-group">
+                <div class="field-header">
+                  <label for="editActionInput" class="field-label">Customer Care Action</label>
+                  <span class="field-tag tag-field-status">Editable</span>
+                </div>
+                <div id="viewAction" class="field-value-text action-text"></div>
+                <div id="editActionContainer" class="field-input-wrapper" style="display: none;">
+                  <textarea id="editActionInput" class="form-textarea" rows="4" placeholder="Specify step-by-step instructions for Customer Care..."></textarea>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Error Dashboard &bull; Customer Care Operations &bull; Local Browser Storage</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

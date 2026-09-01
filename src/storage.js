@@ -1,11 +1,11 @@
 /**
  * Malaa Error Hub — Data Store & LocalStorage Persistence Manager
- * Handles local edits, CS requests, Engineering implementation confirmations,
- * diff derivation, and strict immutability of original values.
+ * Handles local edits, CS requests, Product Responses, Engineering implementation confirmations,
+ * return-to-ready recovery, and strict immutability of original values.
  */
 
-var STORAGE_KEY_RECORDS = "malaa_error_hub_records_v3";
-var STORAGE_KEY_POV = "malaa_error_hub_pov_v3";
+var STORAGE_KEY_RECORDS = "malaa_error_hub_records_v4";
+var STORAGE_KEY_POV = "malaa_error_hub_pov_v4";
 
 function ErrorDataStore() {
   this.records = this.loadRecords();
@@ -30,7 +30,7 @@ ErrorDataStore.prototype.loadRecords = function() {
             status = seed.status;
           }
 
-          var merged = {
+          return {
             id: seed.id,
             errorCode: seed.errorCode,
             service: seed.service,
@@ -51,13 +51,9 @@ ErrorDataStore.prototype.loadRecords = function() {
             status: status,
             saved: custom.saved !== undefined ? custom.saved : seed.saved
           };
-          merged.changedFields = deriveChangedFields(merged);
-          return merged;
         }
 
-        var fresh = Object.assign({}, seed);
-        fresh.changedFields = deriveChangedFields(fresh);
-        return fresh;
+        return Object.assign({}, seed);
       });
     }
   } catch (e) {
@@ -65,9 +61,7 @@ ErrorDataStore.prototype.loadRecords = function() {
   }
 
   return SEED_ERRORS.map(function(s) {
-    var copy = Object.assign({}, s);
-    copy.changedFields = deriveChangedFields(copy);
-    return copy;
+    return Object.assign({}, s);
   });
 };
 
@@ -114,12 +108,15 @@ ErrorDataStore.prototype.updateRecord = function(id, updates) {
     status: updates.status || current.status
   });
 
-  // Recompute changed fields
-  updated.changedFields = deriveChangedFields(updated);
-
   this.records[idx] = updated;
   this.save();
   return updated;
+};
+
+ErrorDataStore.prototype.updateProductResponse = function(id, response) {
+  return this.updateRecord(id, {
+    productResponse: response
+  });
 };
 
 ErrorDataStore.prototype.submitCSRequest = function(id, requestedField, comment) {
@@ -165,16 +162,20 @@ ErrorDataStore.prototype.markImplemented = function(id) {
   });
 };
 
+ErrorDataStore.prototype.returnToReady = function(id) {
+  return this.updateRecord(id, {
+    status: "ready_for_engineering"
+  });
+};
+
 ErrorDataStore.prototype.bulkUpdateStatus = function(ids, newStatus) {
   var count = 0;
   this.records = this.records.map(function(r) {
     if (ids.indexOf(r.id) !== -1 || ids.indexOf(r.errorCode) !== -1) {
       count++;
-      var updated = Object.assign({}, r, {
+      return Object.assign({}, r, {
         status: newStatus
       });
-      updated.changedFields = deriveChangedFields(updated);
-      return updated;
     }
     return r;
   });
@@ -206,9 +207,7 @@ ErrorDataStore.prototype.getKPIs = function() {
     notReviewed: all.filter(function(r) { return r.status === "not_reviewed"; }).length,
     inReview: all.filter(function(r) { return r.status === "in_review"; }).length,
     readyForEngineering: all.filter(function(r) { return r.status === "ready_for_engineering"; }).length,
-    implemented: all.filter(function(r) { return r.status === "implemented"; }).length,
-    arChanges: all.filter(function(r) { return r.changedFields.indexOf("AR Message") !== -1; }).length,
-    enChanges: all.filter(function(r) { return r.changedFields.indexOf("EN Message") !== -1; }).length
+    implemented: all.filter(function(r) { return r.status === "implemented"; }).length
   };
 };
 
@@ -217,9 +216,7 @@ ErrorDataStore.prototype.resetToDefaults = function() {
     localStorage.removeItem(STORAGE_KEY_RECORDS);
   } catch (e) {}
   this.records = SEED_ERRORS.map(function(s) {
-    var copy = Object.assign({}, s);
-    copy.changedFields = deriveChangedFields(copy);
-    return copy;
+    return Object.assign({}, s);
   });
   return this.records;
 };
